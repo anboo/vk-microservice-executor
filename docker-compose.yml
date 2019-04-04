@@ -1,0 +1,66 @@
+version: '3.1'
+services:
+  vk:
+    image: anboo/golang-vk:latest
+    ports:
+      - 8000:8000
+
+  main_account:
+    image: registry.rusdteam.ru/anboo/golang-vk-executor
+    ports:
+      - 8889:8000
+    environment:
+      VK_EMAIL: demo
+      VK_PASSWORD: demo
+      VK_CLIENT: 6278780
+      VK_SCOPE: 'friends,wall,photos'
+      MASTER_HOST: '127.0.0.1:8000'
+      AUTHORIZATION: 'jd212jfj3f3ii1jdf'
+
+  second_account:
+    image: registry.rusdteam.ru/anboo/golang-vk-executor
+    ports:
+      - 8899:8000
+    environment:
+      VK_EMAIL: demo
+      VK_PASSWORD: demo
+      VK_CLIENT: 6278780
+      VK_SCOPE: 'friends,wall,photos'
+      MASTER_HOST: '127.0.0.1:8000'
+      AUTHORIZATION: 'jd212jfj3f3ii1jdf'
+
+  third_account:
+    image: registry.rusdteam.ru/anboo/golang-vk-executor
+    ports:
+      - 8999:8000
+    environment:
+      VK_EMAIL: demo
+      VK_PASSWORD: demo
+      VK_CLIENT: 6278780
+      VK_SCOPE: 'friends,wall,photos'
+      MASTER_HOST: '127.0.0.1:8000'
+      AUTHORIZATION: 'jd212jfj3f3ii1jdf'
+
+  third_2_account:
+    image: registry.rusdteam.ru/anboo/golang-vk-executor
+    ports:
+      - 9999:8000
+    environment:
+      VK_EMAIL: demo
+      VK_PASSWORD: demo
+      VK_CLIENT: 6278780
+      VK_SCOPE: 'friends,wall,photos'
+      MASTER_HOST: '127.0.0.1:8000'
+      AUTHORIZATION: 'jd212jfj3f3ii1jdf'
+
+  third_3_account:
+    image: registry.rusdteam.ru/anboo/golang-vk-executor
+    ports:
+      - 9899:8000
+    environment:
+      VK_EMAIL: demo
+      VK_PASSWORD: demo
+      VK_CLIENT: 6278780
+      VK_SCOPE: 'friends,wall,photos'
+      MASTER_HOST: '127.0.0.1:8000'
+      AUTHORIZATION: 'jd212jfj3f3ii1jdf'
