@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/vorkytaka/easyvk-go/easyvk"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"flag"
 )
 
 type Response struct {
@@ -20,6 +23,12 @@ type Request struct {
 	Method string `json:"method"`
 	Parameters map[string]string `json:"parameters"`
 	Response Response `json:"response"`
+}
+
+type Executor struct {
+	Host string `json:"host"`
+	Port int `json:"port"`
+	Weight int `json:"weight"`
 }
 
 var vk easyvk.VK
@@ -55,14 +64,37 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	vk, _ = easyvk.WithAuth(os.Getenv("VK_EMAIL"), os.Getenv("VK_PASSWORD"), os.Getenv("VK_CLIENT"), os.Getenv("VK_SCOPE"))
-	vk.AccessToken = ""
+	masterHost := flag.String("master-host", "", "")
+	localHost := flag.String("host", "", "")
+	localPort := flag.Int("port", 8000, "")
+	masterAuthorizationCode := flag.String("authorization", "", "Authorization header value")
+
+	flag.Parse()
+
+	log.Println("Try registration on master host " + *masterHost)
+	regData, _ := json.Marshal(Executor{
+		"http://" + *localHost,
+		*localPort,
+		1,
+	})
 
 	log.Println("Try authorization in master host")
+	req, _ := http.NewRequest("POST", *masterHost + "/register-executor", bytes.NewBuffer(regData))
+	req.Header.Add("Authorization", *masterAuthorizationCode)
+	client := &http.Client{}
+	res, err := client.Do(req); if err != nil {
+		panic(err)
+	}
+	body, _ := ioutil.ReadAll(res.Body)
+	log.Println(string(body))
+	log.Println("Successfully registered in master host")
+
+	vk, _ = easyvk.WithAuth(os.Getenv("VK_EMAIL"), os.Getenv("VK_PASSWORD"), os.Getenv("VK_CLIENT"), os.Getenv("VK_SCOPE"))
+	vk.AccessToken = ""
 
 	router := mux.NewRouter()
 	router.HandleFunc("/request", DoRequest).Methods("POST")
 	router.HandleFunc("/_health", HealthCheck).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":8001", router))
 }
