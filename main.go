@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"flag"
 )
 
@@ -61,13 +60,19 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	_, errSerialize := w.Write([]byte("OK")); if errSerialize != nil {
 		log.Fatal(errSerialize)
 	}
+
+	w.Write([]byte("OK"))
 }
 
 func main() {
-	masterHost := flag.String("master-host", "", "")
-	localHost := flag.String("host", "", "")
-	localPort := flag.Int("port", 8000, "")
+	masterHost := flag.String("master-host", "", "Master host for registration current executor")
+	localHost := flag.String("host", "", "Current public host")
+	localPort := flag.Int("port", 8000, "Choose public port")
 	masterAuthorizationCode := flag.String("authorization", "", "Authorization header value")
+	vkLogin := flag.String("login", "", "User login")
+	vkPassword := flag.String("password", "", "User password")
+	vkClient := flag.String("client-id", "", "VK OAuth client id")
+	vkScope := flag.String("scope", "", "OAuth2 scopes")
 
 	flag.Parse()
 
@@ -78,7 +83,6 @@ func main() {
 		1,
 	})
 
-	log.Println("Try authorization in master host")
 	req, _ := http.NewRequest("POST", *masterHost + "/register-executor", bytes.NewBuffer(regData))
 	req.Header.Add("Authorization", *masterAuthorizationCode)
 	client := &http.Client{}
@@ -89,8 +93,7 @@ func main() {
 	log.Println(string(body))
 	log.Println("Successfully registered in master host")
 
-	vk, _ = easyvk.WithAuth(os.Getenv("VK_EMAIL"), os.Getenv("VK_PASSWORD"), os.Getenv("VK_CLIENT"), os.Getenv("VK_SCOPE"))
-	vk.AccessToken = ""
+	vk, _ = easyvk.WithAuth(*vkLogin, *vkPassword, *vkClient, *vkScope)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/request", DoRequest).Methods("POST")
